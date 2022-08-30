@@ -9,7 +9,6 @@ const jwt = require("jsonwebtoken");
 app.use(cors());
 app.use(express.json());
 
-
 //Verify token function:
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -19,25 +18,20 @@ function verifyJWT(req, res, next) {
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(403).send({ message: "Forbidden Access" });
+      return res.status(403).send({ message: "Forbidden Access", status: 403 });
     }
     req.decoded = decoded;
     next();
   });
 }
 
-
 //mongodb connect
-const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.p85dy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.p85dy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
-
-
-
-
 
 //verify token function
 function verifyToken(token) {
@@ -55,7 +49,6 @@ function verifyToken(token) {
   return userEmail;
 }
 
-
 async function run() {
   try {
     await client.connect();
@@ -66,8 +59,17 @@ async function run() {
       const result = await inventoryCollection.insertOne(newItem);
       res.send(result);
     });
+    // Home Page items get api
+    app.get("/homeInventory", async (req, res) => {
+      // const size = parseInt(req.query.size);
+      const query = {};
+      const cursor = inventoryCollection.find(query, { limit: 6 });
+      // items = await cursor.limit(size).toArray();
+      let items = await cursor.toArray();
+      res.send(items);
+    });
     //Get all items from database
-    app.get("/inventory", async (req, res) => {
+    app.get("/inventory", verifyJWT, async (req, res) => {
       const size = parseInt(req.query.size);
       const query = {};
       const cursor = inventoryCollection.find(query);
@@ -108,26 +110,18 @@ async function run() {
       const result = await inventoryCollection.deleteOne(query);
       res.send(result);
     });
-    //Get user added items
-    app.get("/inventoryUser", async (req, res) => {
-      const userToken = req.headers.authorization;
-      const [userEmail, accessToken] = userToken?.split(" ");
-      const decoded = verifyToken(accessToken)
-      console.log(decoded);
+    // Get user products api
+    app.get("/inventoryUser", verifyJWT, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
-      if (userEmail === decoded.email) {
-        const cursor = inventoryCollection.find(query);
-        const items = await cursor.toArray();
-        res.send(items);
-      }
-      else {
-        res.status(403).send({message: "Forbidden Access"})
-      }
+      const cursor = inventoryCollection.find(query);
+      const items = await cursor.toArray();
+      res.send(items);
     });
     //Get token api
     app.post("/login", async (req, res) => {
       const email = req.body;
+      console.log(email);
       const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
       res.send({ token: token });
     });
