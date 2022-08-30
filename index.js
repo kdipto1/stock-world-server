@@ -8,3 +8,137 @@ const jwt = require("jsonwebtoken");
 //middleware
 app.use(cors());
 app.use(express.json());
+
+
+//Verify token function:
+function verifyJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "Unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden Access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
+
+
+//mongodb connect
+const uri =`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.p85dy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverApi: ServerApiVersion.v1,
+});
+
+
+
+
+
+//verify token function
+function verifyToken(token) {
+  let userEmail;
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+    if (err) {
+      userEmail = "Invalid email";
+      console.log(err);
+    }
+    if (decoded) {
+      console.log(decoded);
+      userEmail = decoded;
+    }
+  });
+  return userEmail;
+}
+
+
+async function run() {
+  try {
+    await client.connect();
+    const inventoryCollection = client.db("stockWorld").collection("items");
+    //post item in database
+    app.post("/inventory", async (req, res) => {
+      const newItem = req.body;
+      const result = await inventoryCollection.insertOne(newItem);
+      res.send(result);
+    });
+    //Get all items from database
+    app.get("/inventory", async (req, res) => {
+      const size = parseInt(req.query.size);
+      const query = {};
+      const cursor = inventoryCollection.find(query);
+      let items;
+      if (size) {
+        items = await cursor.limit(size).toArray();
+      } else {
+        items = await cursor.toArray();
+      }
+      res.send(items);
+    });
+    //Update single item in database
+    app.put("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      // console.log(data);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = { $set: { quantity: data.quantity } };
+      const result = await inventoryCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
+    //Get single item from database
+    app.get("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const item = await inventoryCollection.findOne(query);
+      res.send(item);
+    });
+    //Delete single item from database
+    app.delete("/inventory/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await inventoryCollection.deleteOne(query);
+      res.send(result);
+    });
+    //Get user added items
+    app.get("/inventoryUser", async (req, res) => {
+      const userToken = req.headers.authorization;
+      const [userEmail, accessToken] = userToken?.split(" ");
+      const decoded = verifyToken(accessToken)
+      console.log(decoded);
+      const email = req.query.email;
+      const query = { email: email };
+      if (userEmail === decoded.email) {
+        const cursor = inventoryCollection.find(query);
+        const items = await cursor.toArray();
+        res.send(items);
+      }
+      else {
+        res.status(403).send({message: "Forbidden Access"})
+      }
+    });
+    //Get token api
+    app.post("/login", async (req, res) => {
+      const email = req.body;
+      const token = await jwt.sign(email, process.env.ACCESS_TOKEN_SECRET);
+      res.send({ token: token });
+    });
+  } finally {
+  }
+}
+run().catch(console.dir);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+app.listen(port, () => {
+  console.log(`Listening from port ${port}`);
+});
