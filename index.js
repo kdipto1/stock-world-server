@@ -33,22 +33,6 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
-//verify token function
-function verifyToken(token) {
-  let userEmail;
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
-    if (err) {
-      userEmail = "Invalid email";
-      console.log(err);
-    }
-    if (decoded) {
-      console.log(decoded);
-      userEmail = decoded;
-    }
-  });
-  return userEmail;
-}
-
 async function run() {
   try {
     await client.connect();
@@ -73,12 +57,12 @@ async function run() {
       const size = parseInt(req.query.size);
       const query = {};
       const cursor = inventoryCollection.find(query);
-      let items;
-      if (size) {
-        items = await cursor.limit(size).toArray();
-      } else {
-        items = await cursor.toArray();
-      }
+      // let items;
+      // if (size) {
+      // items = await cursor.limit(size).toArray();
+      // } else {
+      let items = await cursor.toArray();
+      // }
       res.send(items);
     });
     //Update single item in database
