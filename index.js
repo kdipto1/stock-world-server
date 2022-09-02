@@ -12,6 +12,7 @@ app.use(express.json());
 //Verify token function:
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
+  console.log(authHeader);
   if (!authHeader) {
     return res.status(401).send({ message: "Unauthorized access" });
   }
@@ -22,6 +23,7 @@ function verifyJWT(req, res, next) {
     }
     req.decoded = decoded;
     next();
+    console.log(authHeader);
   });
 }
 
@@ -38,7 +40,7 @@ async function run() {
     await client.connect();
     const inventoryCollection = client.db("stockWorld").collection("items");
     //post item in database
-    app.post("/inventory", async (req, res) => {
+    app.post("/inventory",verifyJWT, async (req, res) => {
       const newItem = req.body;
       const result = await inventoryCollection.insertOne(newItem);
       res.send(result);
@@ -53,20 +55,20 @@ async function run() {
       res.send(items);
     });
     //Get all items from database
-    app.get("/inventory", verifyJWT, async (req, res) => {
-      const size = parseInt(req.query.size);
+    app.get("/manageInventory",verifyJWT, async (req, res) => {
+      // const size = parseInt(req.query.size);
       const query = {};
       const cursor = inventoryCollection.find(query);
       // let items;
       // if (size) {
       // items = await cursor.limit(size).toArray();
       // } else {
-      let items = await cursor.toArray();
+      const allItems = await cursor.toArray();
       // }
-      res.send(items);
+      res.send(allItems);
     });
     //Update single item in database
-    app.put("/inventory/:id", async (req, res) => {
+    app.put("/inventory/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       // console.log(data);
@@ -81,14 +83,14 @@ async function run() {
       res.send(result);
     });
     //Get single item from database
-    app.get("/inventory/:id", async (req, res) => {
+    app.get("/inventory/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const item = await inventoryCollection.findOne(query);
       res.send(item);
     });
     //Delete single item from database
-    app.delete("/inventory/:id", async (req, res) => {
+    app.delete("/inventory/:id",verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await inventoryCollection.deleteOne(query);
