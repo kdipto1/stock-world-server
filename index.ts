@@ -44,17 +44,6 @@ function verifyJWT(req: Request, res: Response, next: NextFunction) {
   );
 }
 
-//mongodb connect old config --------
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.p85dy.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-// const client = new MongoClient(uri, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-//   serverApi: ServerApiVersion.v1,
-// });
-
-// mongodb connect new config ++++++++
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(process.env.MONGODB_URI as string, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -151,5 +140,5 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 app.listen(port, () => {
-  console.log(`Listening from port ${port}`);
+  console.log(`Listening from port http://localhost:${port}`);
 });
