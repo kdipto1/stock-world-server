@@ -5,9 +5,20 @@ import cors from "cors";
 require("dotenv").config();
 const app = express();
 import jwt from "jsonwebtoken";
+import axios from "axios";
+import cron from "node-cron";
 //middleware
 app.use(cors());
 app.use(express.json());
+
+cron.schedule("*/10 * * * *", async () => {
+  try {
+    const response = await axios.get("https://stock-world-server.onrender.com");
+    console.log("Server pinged successfully");
+  } catch (error) {
+    console.error("Error pinging server:", error);
+  }
+});
 
 //Verify token function:
 function verifyJWT(req: Request, res: Response, next: NextFunction) {
