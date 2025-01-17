@@ -23,6 +23,7 @@ const axios_1 = __importDefault(require("axios"));
 const cron_1 = require("cron");
 //middleware
 app.use((0, cors_1.default)());
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
 const job = new cron_1.CronJob("*/14 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
     try {

@@ -9,6 +9,7 @@ import axios from "axios";
 import { CronJob } from "cron";
 //middleware
 app.use(cors());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const job = new CronJob("*/14 * * * *", async () => {
