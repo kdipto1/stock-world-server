@@ -24,13 +24,18 @@ const cron_1 = require("cron");
 //middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-const job = new cron_1.CronJob("*/10 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
+const job = new cron_1.CronJob("*/14 * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield axios_1.default.get("https://stock-world-server.onrender.com");
-        console.log("Server pinged successfully");
+        yield axios_1.default.get(process.env.PING_URL, { timeout: 30000 });
+        console.log("URL pinged successfully");
     }
     catch (error) {
-        console.error("Error pinging server:", error);
+        console.error("Error pinging URL:", error.message);
+        if (error) {
+            setTimeout(() => __awaiter(void 0, void 0, void 0, function* () {
+                yield axios_1.default.get(process.env.PING_URL, { timeout: 10000 });
+            }), 10000);
+        }
     }
 }));
 job.start();
@@ -145,3 +150,10 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
     console.log(`Listening from port http://localhost:${port}`);
 });
+process.on("SIGINT", () => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("SIGTERM signal received: closing MongoDB connection and stopping cron job");
+    yield client.close();
+    job.stop();
+    console.log("MongoDB connection closed, cron job stopped,");
+    process.exit(0);
+}));

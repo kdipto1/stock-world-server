@@ -11,12 +11,17 @@ import { CronJob } from "cron";
 app.use(cors());
 app.use(express.json());
 
-const job = new CronJob("*/10 * * * *", async () => {
+const job = new CronJob("*/14 * * * *", async () => {
   try {
-    await axios.get("https://stock-world-server.onrender.com");
-    console.log("Server pinged successfully");
-  } catch (error) {
-    console.error("Error pinging server:", error);
+    await axios.get(process.env.PING_URL as string, { timeout: 30000 });
+    console.log("URL pinged successfully");
+  } catch (error: any) {
+    console.error("Error pinging URL:", error.message);
+    if (error) {
+      setTimeout(async () => {
+        await axios.get(process.env.PING_URL as string, { timeout: 10000 });
+      }, 10000);
+    }
   }
 });
 
@@ -143,4 +148,14 @@ app.get("/", (req, res) => {
 });
 app.listen(port, () => {
   console.log(`Listening from port http://localhost:${port}`);
+});
+
+process.on("SIGINT", async () => {
+  console.log(
+    "SIGTERM signal received: closing MongoDB connection and stopping cron job"
+  );
+  await client.close();
+  job.stop();
+  console.log("MongoDB connection closed, cron job stopped,");
+  process.exit(0);
 });

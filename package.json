@@ -1,5 +1,9 @@
 {
   "name": "stockworl-server",
+  "author": {
+    "name": "Dipto Karmaker",
+    "github": "https://github.com/kdipto1"
+  },
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
