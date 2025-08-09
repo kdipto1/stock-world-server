@@ -26,11 +26,12 @@ const getHomeItems = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const getAllItems = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await inventory_service_1.InventoryService.getAllItems();
+    const result = await inventory_service_1.InventoryService.getAllItems(req.query);
     res.status(http_status_1.default.OK).json({
         success: true,
         message: "All items retrieved successfully",
-        data: result,
+        data: result.data,
+        meta: result.meta,
     });
 });
 const getItemById = (0, catchAsync_1.default)(async (req, res) => {
@@ -47,7 +48,8 @@ const getItemById = (0, catchAsync_1.default)(async (req, res) => {
 });
 const updateItem = (0, catchAsync_1.default)(async (req, res) => {
     const { id } = req.params;
-    const result = await inventory_service_1.InventoryService.updateItem(id, req.body);
+    const user = req.user;
+    const result = await inventory_service_1.InventoryService.updateItem(id, req.body, user);
     if (!result) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Item not found");
     }
@@ -59,7 +61,8 @@ const updateItem = (0, catchAsync_1.default)(async (req, res) => {
 });
 const deleteItem = (0, catchAsync_1.default)(async (req, res) => {
     const { id } = req.params;
-    const result = await inventory_service_1.InventoryService.deleteItem(id);
+    const user = req.user;
+    const result = await inventory_service_1.InventoryService.deleteItem(id, user);
     if (!result) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Item not found");
     }

@@ -15,6 +15,12 @@ const login = (0, catchAsync_1.default)(async (req, res) => {
         data: result,
     });
 });
+const socialLogin = (0, catchAsync_1.default)(async (req, res) => {
+    const { idToken } = req.body;
+    const result = await auth_service_1.AuthService.socialLogin(idToken);
+    res.status(http_status_1.default.OK).json({ success: true, message: 'Social login successful', data: result });
+});
 exports.AuthController = {
     login,
+    socialLogin,
 };

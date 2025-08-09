@@ -11,11 +11,16 @@ const enumerateErrorFormat = winston_1.default.format((info) => {
     }
     return info;
 });
+const addRequestIdFormat = winston_1.default.format((info) => {
+    const requestId = info.requestId || 'N/A';
+    info.message = `[RequestID: ${requestId}] ${info.message}`;
+    return info;
+});
 const logger = winston_1.default.createLogger({
     level: config_1.default.nodeEnv === "development" ? "debug" : "info",
-    format: winston_1.default.format.combine(enumerateErrorFormat(), config_1.default.nodeEnv === "development"
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), enumerateErrorFormat(), addRequestIdFormat(), config_1.default.nodeEnv === "development"
         ? winston_1.default.format.colorize()
-        : winston_1.default.format.uncolorize(), winston_1.default.format.splat(), winston_1.default.format.printf((info) => `${info.level}: ${info.message}`)),
+        : winston_1.default.format.uncolorize(), winston_1.default.format.splat(), winston_1.default.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)),
     transports: [
         new winston_1.default.transports.Console({
             stderrLevels: ["error"],

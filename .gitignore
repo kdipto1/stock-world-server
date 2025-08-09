@@ -1,3 +1,7 @@
 node_modules
 .env
 backup
+MIGRATION_SUMMARY.md
+TODO.md
+updated-server-code-output.xml
+DEVELOPMENT-plan.md

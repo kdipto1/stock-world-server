@@ -12,7 +12,13 @@ interface Config {
     secret: string;
     expiresIn: string;
   };
+  firebase: {
+    projectId: string;
+    privateKey: string;
+    clientEmail: string;
+  };
   pingUrl: string;
+  corsOrigin: string;
 }
 
 const config: Config = {
@@ -25,7 +31,13 @@ const config: Config = {
     secret: process.env.ACCESS_TOKEN_SECRET as string,
     expiresIn: "7d",
   },
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID as string,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n') as string,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
+  },
   pingUrl: process.env.PING_URL || "http://localhost:5000",
+  corsOrigin: process.env.PORTFOLIO_DOMAIN || "*",
 };
 
 export default config;

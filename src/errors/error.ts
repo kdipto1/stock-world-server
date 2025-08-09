@@ -32,15 +32,25 @@ export const errorHandler = (err: ApiError, _req: Request, res: Response) => {
 
   res.locals["errorMessage"] = err.message;
 
+  // Handle validation errors from Zod
+  const errors = (err as any).validationErrors || [{
+    field: err.name || 'error',
+    message: message
+  }];
+
   const response = {
-    code: statusCode,
+    success: false,
     message,
-    ...(config.nodeEnv === "development" && { stack: err.stack }),
+    errors,
+    ...(config.nodeEnv === "development" && { 
+      stack: err.stack,
+      statusCode 
+    }),
   };
 
   if (config.nodeEnv === "development") {
     logger.error(err);
   }
 
-  res.status(statusCode).send(response);
+  res.status(statusCode).json(response);
 };

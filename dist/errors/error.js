@@ -28,14 +28,23 @@ const errorHandler = (err, _req, res) => {
         message = "Internal Server Error";
     }
     res.locals["errorMessage"] = err.message;
+    // Handle validation errors from Zod
+    const errors = err.validationErrors || [{
+            field: err.name || 'error',
+            message: message
+        }];
     const response = {
-        code: statusCode,
+        success: false,
         message,
-        ...(config_1.default.nodeEnv === "development" && { stack: err.stack }),
+        errors,
+        ...(config_1.default.nodeEnv === "development" && {
+            stack: err.stack,
+            statusCode
+        }),
     };
     if (config_1.default.nodeEnv === "development") {
         logger_1.logger.error(err);
     }
-    res.status(statusCode).send(response);
+    res.status(statusCode).json(response);
 };
 exports.errorHandler = errorHandler;

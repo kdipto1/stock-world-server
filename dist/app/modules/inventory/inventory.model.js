@@ -41,4 +41,11 @@ const inventorySchema = new mongoose_1.default.Schema({
 }, {
     timestamps: true,
 });
+// Add indexes for better query performance
+inventorySchema.index({ email: 1 });
+inventorySchema.index({ category: 1 });
+inventorySchema.index({ createdAt: -1 });
+inventorySchema.index({ name: 1 });
+inventorySchema.index({ price: 1 });
+inventorySchema.index({ quantity: 1 });
 exports.InventoryItem = mongoose_1.default.model("InventoryItem", inventorySchema);

@@ -15,6 +15,12 @@ const config = {
         secret: process.env.ACCESS_TOKEN_SECRET,
         expiresIn: "7d",
     },
+    firebase: {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    },
     pingUrl: process.env.PING_URL || "http://localhost:5000",
+    corsOrigin: process.env.PORTFOLIO_DOMAIN || "*",
 };
 exports.default = config;

@@ -8,16 +8,26 @@ const router = express.Router();
 // Public routes
 router.get("/home", InventoryController.getHomeItems);
 
+import validate from "../../middleware/validate";
+import { 
+  createInventoryItemSchema, 
+  updateInventoryItemSchema, 
+  getItemByIdSchema, 
+  getAllItemsSchema 
+} from "./inventory.validation";
+
 // Protected routes
 router.post(
   "/",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.USER),
+  validate(createInventoryItemSchema),
   InventoryController.createItem,
 );
 
 router.get(
   "/manage",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.USER),
+  validate(getAllItemsSchema),
   InventoryController.getAllItems,
 );
 
@@ -30,18 +40,21 @@ router.get(
 router.get(
   "/:id",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.USER),
+  validate(getItemByIdSchema),
   InventoryController.getItemById,
 );
 
 router.put(
   "/:id",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.USER),
+  validate(updateInventoryItemSchema),
   InventoryController.updateItem,
 );
 
 router.delete(
   "/:id",
   auth(ENUM_USER_ROLE.ADMIN, ENUM_USER_ROLE.USER),
+  validate(getItemByIdSchema),
   InventoryController.deleteItem,
 );
 
