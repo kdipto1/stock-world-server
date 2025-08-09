@@ -31,12 +31,14 @@ const job = new CronJob("*/12 * * * *", async () => {
 job.start();
 
 // Connect to MongoDB and start server
-mongoose.connect(config.mongoose.url).then(() => {
-  logger.info("Connected to MongoDB");
-  server = app.listen(config.port, () => {
-    logger.info(`Listening to port ${config.port}`);
+mongoose
+  .connect(config.mongoose.url, { dbName: config.mongoose.dbName })
+  .then(() => {
+    logger.info("Connected to MongoDB");
+    server = app.listen(config.port, () => {
+      logger.info(`Listening to port ${config.port}`);
+    });
   });
-});
 
 const exitHandler = () => {
   if (server) {
@@ -65,7 +67,9 @@ process.on("SIGTERM", () => {
 });
 
 process.on("SIGINT", async () => {
-  logger.info("SIGINT signal received: closing MongoDB connection and stopping cron job");
+  logger.info(
+    "SIGINT signal received: closing MongoDB connection and stopping cron job"
+  );
   await mongoose.connection.close();
   job.stop();
   logger.info("MongoDB connection closed, cron job stopped");

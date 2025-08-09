@@ -38,7 +38,7 @@ const inventorySchema = new mongoose.Schema<IInventoryItem, InventoryModel>(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 // Add indexes for better query performance
@@ -51,5 +51,5 @@ inventorySchema.index({ quantity: 1 });
 
 export const InventoryItem = mongoose.model<IInventoryItem, InventoryModel>(
   "InventoryItem",
-  inventorySchema,
+  inventorySchema
 );
