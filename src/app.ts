@@ -9,6 +9,9 @@ import routes from "./app/routes/v1";
 
 const app: Express = express();
 
+// Behind a proxy (Render, etc.) so trust the first proxy to correctly read X-Forwarded-* headers
+app.set("trust proxy", 1);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -52,6 +55,11 @@ app.use("/api/v1", routes);
 app.get("/", (req, res) => {
   res.send("StockWorld API is running!");
 });
+
+// // Temporary alias to support front-end path hitting /homeInventory
+// app.get("/homeInventory", (_req, res) => {
+//   res.redirect(307, "/api/v1/inventory/home");
+// });
 
 // send back a 404 error for any unknown api request
 app.use((_req, _res, next) => {

@@ -21,6 +21,7 @@ const login = async (payload) => {
         throw new ApiError_1.default(http_status_1.default.UNAUTHORIZED, "Invalid credentials");
     }
     const tokenPayload = {
+        userId: user._id,
         email: user.email,
         role: user.role,
     };

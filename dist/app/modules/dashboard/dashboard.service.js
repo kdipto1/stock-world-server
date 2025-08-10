@@ -3,63 +3,58 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DashboardService = void 0;
 const inventory_model_1 = require("../inventory/inventory.model");
 const getDashboardStats = async () => {
-    const stats = await inventory_model_1.InventoryItem.aggregate([
-        {
-            $group: {
-                _id: null,
-                totalItems: { $sum: 1 },
-                totalQuantity: { $sum: "$quantity" },
-                totalValue: { $sum: { $multiply: ["$price", "$quantity"] } },
-            },
-        },
-        {
-            $lookup: {
-                from: "inventoryitems",
-                pipeline: [
-                    {
-                        $match: {
-                            quantity: { $lt: 10 },
-                        },
-                    },
-                    {
-                        $count: "lowStockItems",
-                    },
-                ],
-                as: "lowStockInfo",
-            },
-        },
-        {
-            $unwind: {
-                path: "$lowStockInfo",
-                preserveNullAndEmptyArrays: true,
-            },
-        },
-        {
-            $lookup: {
-                from: "inventoryitems",
-                pipeline: [
-                    {
-                        $group: {
-                            _id: "$category",
-                            count: { $sum: 1 },
-                        },
-                    },
-                ],
-                as: "categoryCounts",
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                totalItems: 1,
-                totalQuantity: 1,
-                totalValue: 1,
-                lowStockItems: { $ifNull: ["$lowStockInfo.lowStockItems", 0] },
-                categoryCounts: "$categoryCounts",
-            },
-        },
-    ]);
-    return stats[0];
+    try {
+        // Get basic counts first
+        const totalItems = await inventory_model_1.InventoryItem.countDocuments();
+        if (totalItems === 0) {
+            return {
+                totalItems: 0,
+                totalQuantity: 0,
+                totalValue: 0,
+                lowStockItems: 0,
+                categoryCounts: []
+            };
+        }
+        // Get all items and calculate in JavaScript for safety
+        const items = await inventory_model_1.InventoryItem.find().select('price quantity category');
+        let totalQuantity = 0;
+        let totalValue = 0;
+        let lowStockItems = 0;
+        const categoryCountsMap = new Map();
+        items.forEach(item => {
+            // Safely convert to numbers
+            const price = Number(item.price) || 0;
+            const quantity = Number(item.quantity) || 0;
+            const category = item.category || 'Uncategorized';
+            totalQuantity += quantity;
+            totalValue += price * quantity;
+            if (quantity < 10) {
+                lowStockItems++;
+            }
+            // Count categories
+            categoryCountsMap.set(category, (categoryCountsMap.get(category) || 0) + 1);
+        });
+        // Convert category counts to array format
+        const categoryCounts = Array.from(categoryCountsMap.entries()).map(([_id, count]) => ({ _id, count }));
+        return {
+            totalItems,
+            totalQuantity,
+            totalValue,
+            lowStockItems,
+            categoryCounts
+        };
+    }
+    catch (error) {
+        console.error('❌ Error in getDashboardStats:', error);
+        // Return safe defaults on any error
+        return {
+            totalItems: 0,
+            totalQuantity: 0,
+            totalValue: 0,
+            lowStockItems: 0,
+            categoryCounts: []
+        };
+    }
 };
 exports.DashboardService = {
     getDashboardStats,
