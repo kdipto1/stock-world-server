@@ -43,8 +43,9 @@ const config: Config = {
   },
   pingUrl: process.env.PING_URL || "http://localhost:5000",
   corsOrigin: [
-    process.env.PORTFOLIO_DOMAIN || "http://localhost:3000",
+    process.env.PORTFOLIO_DOMAIN || "http://localhost:10000",
     "https://stock-world-1.web.app",
+    "https://stock-world-1.web.app/",
   ],
 };
 
