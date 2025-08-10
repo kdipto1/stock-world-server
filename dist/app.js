@@ -12,6 +12,8 @@ const logger_1 = require("./logger");
 const errors_1 = require("./errors");
 const v1_1 = __importDefault(require("./app/routes/v1"));
 const app = (0, express_1.default)();
+// Behind a proxy (Render, etc.) so trust the first proxy to correctly read X-Forwarded-* headers
+app.set("trust proxy", 1);
 // Rate limiting
 const limiter = (0, express_rate_limit_1.default)({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -47,6 +49,10 @@ app.use("/api/v1", v1_1.default);
 app.get("/", (req, res) => {
     res.send("StockWorld API is running!");
 });
+// // Temporary alias to support front-end path hitting /homeInventory
+// app.get("/homeInventory", (_req, res) => {
+//   res.redirect(307, "/api/v1/inventory/home");
+// });
 // send back a 404 error for any unknown api request
 app.use((_req, _res, next) => {
     next(new errors_1.ApiError(http_status_1.default.NOT_FOUND, "Not found"));
