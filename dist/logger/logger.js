@@ -1,0 +1,30 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const winston_1 = __importDefault(require("winston"));
+const config_1 = __importDefault(require("../config/config"));
+const enumerateErrorFormat = winston_1.default.format((info) => {
+    if (info instanceof Error) {
+        Object.assign(info, { message: info.stack });
+    }
+    return info;
+});
+const addRequestIdFormat = winston_1.default.format((info) => {
+    const requestId = info.requestId || 'N/A';
+    info.message = `[RequestID: ${requestId}] ${info.message}`;
+    return info;
+});
+const logger = winston_1.default.createLogger({
+    level: config_1.default.nodeEnv === "development" ? "debug" : "info",
+    format: winston_1.default.format.combine(winston_1.default.format.timestamp(), enumerateErrorFormat(), addRequestIdFormat(), config_1.default.nodeEnv === "development"
+        ? winston_1.default.format.colorize()
+        : winston_1.default.format.uncolorize(), winston_1.default.format.splat(), winston_1.default.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)),
+    transports: [
+        new winston_1.default.transports.Console({
+            stderrLevels: ["error"],
+        }),
+    ],
+});
+exports.default = logger;
