@@ -19,7 +19,7 @@ interface Config {
     clientEmail: string;
   };
   pingUrl: string;
-  corsOrigin: string;
+  corsOrigin: string | string[];
 }
 
 const config: Config = {
@@ -42,7 +42,10 @@ const config: Config = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
   },
   pingUrl: process.env.PING_URL || "http://localhost:5000",
-  corsOrigin: process.env.PORTFOLIO_DOMAIN || "*",
+  corsOrigin: [
+    process.env.PORTFOLIO_DOMAIN || "http://localhost:3000",
+    "https://stock-world-1.web.app",
+  ],
 };
 
 export default config;
