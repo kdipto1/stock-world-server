@@ -23,6 +23,7 @@ const login = async (payload: ILoginPayload): Promise<ILoginResponse> => {
   }
 
   const tokenPayload = {
+    userId: user._id,
     email: user.email,
     role: user.role,
   };
