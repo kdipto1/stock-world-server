@@ -9,7 +9,8 @@ const config = {
     port: Number(process.env.PORT) || 5000,
     nodeEnv: process.env.NODE_ENV || "development",
     mongoose: {
-        url: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/stockworld",
+        url: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017",
+        dbName: process.env.MONGODB_DB_NAME || "stockWorld",
     },
     jwt: {
         secret: process.env.ACCESS_TOKEN_SECRET,
@@ -17,7 +18,7 @@ const config = {
     },
     firebase: {
         projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     },
     pingUrl: process.env.PING_URL || "http://localhost:5000",

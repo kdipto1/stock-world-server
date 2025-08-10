@@ -33,7 +33,9 @@ const job = new cron_1.CronJob("*/12 * * * *", async () => {
 // Start cron job
 job.start();
 // Connect to MongoDB and start server
-mongoose_1.default.connect(config_1.default.mongoose.url).then(() => {
+mongoose_1.default
+    .connect(config_1.default.mongoose.url, { dbName: config_1.default.mongoose.dbName })
+    .then(() => {
     logger_1.logger.info("Connected to MongoDB");
     server = app_1.default.listen(config_1.default.port, () => {
         logger_1.logger.info(`Listening to port ${config_1.default.port}`);
