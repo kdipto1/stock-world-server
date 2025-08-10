@@ -19,8 +19,44 @@ interface Config {
     clientEmail: string;
   };
   pingUrl: string;
-  corsOrigin: string | string[];
+  corsOrigin: string[];
 }
+
+// Normalize a single origin by trimming and removing trailing slashes and wildcard suffixes
+const normalizeOrigin = (origin: string): string => {
+  if (!origin) return origin;
+  let trimmed = origin.trim();
+  if (trimmed.endsWith("/*")) {
+    trimmed = trimmed.slice(0, -2);
+  }
+  while (trimmed.length > 0 && trimmed.endsWith("/")) {
+    trimmed = trimmed.slice(0, -1);
+  }
+  return trimmed;
+};
+
+// Parse allowed origins from env. Supports comma-separated list in CORS_ORIGINS.
+const parseAllowedOriginsFromEnv = (): string[] => {
+  const envList = process.env.CORS_ORIGINS || process.env.PORTFOLIO_DOMAIN || "";
+  if (!envList) return [];
+  return envList
+    .split(",")
+    .map((item) => normalizeOrigin(item))
+    .filter((item) => Boolean(item));
+};
+
+const defaultAllowedOrigins: string[] = [
+  process.env.PORTFOLIO_DOMAIN || "http://localhost:10000",
+  "https://stock-world-1.web.app",
+];
+
+const allowedOrigins = (() => {
+  const fromEnv = parseAllowedOriginsFromEnv();
+  const list = fromEnv.length > 0 ? fromEnv : defaultAllowedOrigins;
+  // Ensure uniqueness and normalized values
+  const unique = Array.from(new Set(list.map((o) => normalizeOrigin(o))));
+  return unique;
+})();
 
 const config: Config = {
   port: Number(process.env.PORT) || 5000,
@@ -42,11 +78,7 @@ const config: Config = {
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
   },
   pingUrl: process.env.PING_URL || "http://localhost:5000",
-  corsOrigin: [
-    process.env.PORTFOLIO_DOMAIN || "http://localhost:10000",
-    "https://stock-world-1.web.app",
-    "https://stock-world-1.web.app/",
-  ],
+  corsOrigin: allowedOrigins,
 };
 
 export default config;
